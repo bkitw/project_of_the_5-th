@@ -10,30 +10,44 @@ class Name:
 
 
 class Tag:
-    def __init__(self, tags):
-        self.tags = tags
+    def __init__(self, *args):
+        self.tags = []
+        if len(args) == 0:
+            self.tags.append(args[0])
+        else:
+            for tags in args:
+                self.tags.append(tags)
 
     def __repr__(self):
         return str(self.tags)
 
 
 class Notes:
-    def __init__(self, name: Name, data: str, tag: Tag = None):
+    def __init__(self, name: Name, data: str, tags: Tag = None):
         self.name = name
         self.data = data
-        self.tags = []
-        if tag:
-            self.tags.append(tag)
+        self.tag = tags
 
     def __repr__(self):
-        if self.tags == []:
-            return f'{self.name}, {self.data}'
-        return f'{self.name}, {self.data}, Tags: {self.tags}'
+        if self.tag is None:
+            return f'{self.name}: {self.data}'
+        else:
+            return f'{self.name}: {self.data}, Tags: {self.tag}'
 
 
 class NoteBook(UserDict):
     def add_to_notebook(self, note: Notes):
         self.data[note.name.value] = note
+
+
+def input_error(in_func):
+    def wrapper(*args):
+        try:
+            check = in_func(*args)
+            return check
+        except KeyError:
+            return "some error cause"
+    return wrapper
 
 
 def ex(*args):
@@ -44,7 +58,53 @@ def cmd_error(*args):
     return 'I can`t help you'
 
 
-COMMANDS = {ex: ['exit', '.']}
+@input_error
+def add_to_notebook(notebook: NoteBook, *args):
+    temp_name = Name(args[0])
+    temp_note_txt = args[1]
+    tmp_user_input = input('Do you need to add some Tags to your note? if so - type Y/y -> ')
+    if tmp_user_input in ('Y', 'y'):
+        tmp_tags_input = Tag((input('add Tags divided by spaces: ')))
+        print(tmp_tags_input)
+        # tag_1 = Tag('opportunity', 'test')
+        temp_note = Notes(temp_name, temp_note_txt, tmp_tags_input)
+    else:
+        temp_note = Notes(temp_name, temp_note_txt)
+    notebook.add_to_notebook(temp_note)
+    return 'Note was added'
+
+
+@input_error
+def show_all(notebook: NoteBook, *args):
+    for names, values in notebook.items():
+        print(values)
+    return 'End of the notes'
+
+
+@input_error
+def delete_note(notebook: NoteBook, *args):
+    tmp_note = ' '.join(args)
+    notebook.pop(tmp_note)
+    return f'Note {tmp_note} were deleted'
+
+
+@input_error
+def add_tags(notebook: NoteBook, *args):
+    return 'in add tags'
+
+
+def change_note(notebook: NoteBook, *args):
+    tmp_note = ' '.join(args)
+    if tmp_note not in notebook.keys():
+        return 'There is no such note'
+    print(f'the note with name {tmp_note} exist and looks like --> {notebook.get(tmp_note)}')
+    notebook[tmp_note] = Notes(Name(tmp_note), input('change the note: '))
+
+    return f'Note {tmp_note} was changed'
+
+
+COMMANDS = {ex: ['exit', '.'], add_to_notebook: ['add note'], show_all: ["show all"], delete_note: ['delete note'],
+            change_note: ['change note']}
 
 
 def parse_command(user_input: str):
@@ -62,7 +122,8 @@ def main():
     name_n2 = Name('Second note')
     name_n3 = Name('Third note')
     name_n4 = Name('Bandera smuzi')
-    tag_1 = Tag('opportunity')
+    tag_1 = Tag('opportunity', 'test')
+
     tag_2 = Tag('cooking')
     note_1 = Notes(name_n1, 'Huge opportunity', tag_1)
     note_2 = Notes(name_n2, 'second step')
@@ -76,7 +137,7 @@ def main():
     our_notes.add_to_notebook(note_3)
     our_notes.add_to_notebook(note_4)
 
-    print(our_notes)
+    # print(our_notes)
     while True:
         our_command = input("And your command is...> ")
         result, data = parse_command(our_command)

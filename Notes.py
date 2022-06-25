@@ -119,8 +119,10 @@ def finder(*args):
     if tmp_input == 'tags':
         find_tag = input('type name for needed tag -> ')
         for k_notes, v_notes in args[0].items():
-            if find_tag in v_notes.tag:
-                print('Yes')
+            for i in v_notes.tag:
+                if find_tag == i.tags:
+                    print(f'Note name {k_notes}, : {v_notes.data}')
+                    continue
     elif tmp_input == 'notes':
         find_note = input('type info to find -> ')
         for k_notes, v_notes in args[0].items():
@@ -128,7 +130,6 @@ def finder(*args):
                 print(f'Note name {k_notes}, : {v_notes.data}')
     else:
         return 'Oops'
-            # print(find_tag, type(find_tag), v_notes.tag, type(v_notes.tag))
     return '-------------------'
 
 

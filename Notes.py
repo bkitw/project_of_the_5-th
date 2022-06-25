@@ -46,7 +46,7 @@ def input_error(in_func):
             check = in_func(*args)
             return check
         except KeyError:
-            return "some error cause"
+            return "Please check your input"
     return wrapper
 
 

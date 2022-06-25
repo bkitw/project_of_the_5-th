@@ -101,6 +101,7 @@ def add_tag(notebook: NoteBook, *args):
     return f'Tag for Note {tmp_note} was added'
 
 
+@input_error
 def change_note(notebook: NoteBook, *args):
     tmp_note = ' '.join(args)
     if tmp_note not in notebook.keys():
@@ -110,6 +111,25 @@ def change_note(notebook: NoteBook, *args):
             print(f'the note with name {tmp_note} exist and looks like --> {notebook.get(tmp_note)}')
             Notes.change_notes(v_notes, input('change the note: '))
     return f'Note {tmp_note} was changed'
+
+
+@input_error
+def finder(*args):
+    tmp_input = input('what do you want to search? by tags - type "tags" for notes type "notes"  ')
+    if tmp_input == 'tags':
+        find_tag = input('type name for needed tag -> ')
+        for k_notes, v_notes in args[0].items():
+            if find_tag in v_notes.tag:
+                print('Yes')
+    elif tmp_input == 'notes':
+        find_note = input('type info to find -> ')
+        for k_notes, v_notes in args[0].items():
+            if find_note in v_notes.data:
+                print(f'Note name {k_notes}, : {v_notes.data}')
+    else:
+        return 'Oops'
+            # print(find_tag, type(find_tag), v_notes.tag, type(v_notes.tag))
+    return '-------------------'
 
 
 def info(*args):
@@ -123,7 +143,7 @@ def info(*args):
 
 
 COMMANDS = {ex: ['exit', '.'], add_to_notebook: ['add note'], show_all: ["show all"], delete_note: ['delete note'],
-            change_note: ['change note'], add_tag: ['add tag'], info: ['info', 'help']}
+            change_note: ['change note'], add_tag: ['add tag'], finder: ['finder'], info: ['info', 'help']}
 
 
 def parse_command(user_input: str):
@@ -138,15 +158,17 @@ def main():
     our_notes = NoteBook()
     print('for help with commands type info')
     # тут просто пока наполняю записную книгу чтоб что-то было
-    name_n1 = Name('First note')
+    name_n1 = Name('Godfather')
     name_n2 = Name('Second note')
-    name_n3 = Name('Third note')
+    name_n3 = Name('Cuba Libre')
     name_n4 = Name('Bandera smuzi')
     tag_1 = Tag("Tag1")
     tag_2 = Tag('cooking')
-    note_1 = Notes(name_n1, 'Huge opportunity', tag_1)
-    note_2 = Notes(name_n2, 'second step')
-    note_3 = Notes(name_n3, '3 eggs, one tomato', tag_2)
+    note_1 = Notes(name_n1, 'Хорошо перемешайте оба ингредиента в стакане с колотым льдом. Ничем не украшайте.', tag_1)
+    note_2 = Notes(name_n2, 'Выдавите сок лайма в высокий стакан (хайбол), наполовину заполненный льдом. Бросьте в '
+                            'стакан оставшуюся кожуру. Добавьте ром, размешайте, долейте ледяной Кока-Колой.')
+    note_3 = Notes(name_n3, 'Влейте спиртное в низкий стакан, заполненный большим количеством колотого льда. Хорошо '
+                            'размешайте. Затем добавьте колу.бутылка', tag_2)
     note_4 = Notes(name_n4,'в бутылку до половины объема насыпаются кусочки пенопласта; заливается 1/3 оставшегося объема '
                            'отработанного машинного масла, 2/3 – бензина; но сверху должно оставаться немного места для '
                            'испарения; бутылка плотно закрывается пробкой; на горлышко привязывается фитиль; '

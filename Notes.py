@@ -10,13 +10,8 @@ class Name:
 
 
 class Tag:
-    def __init__(self, *args):
-        self.tags = []
-        if len(args) == 0:
-            self.tags.append(args[0])
-        else:
-            for tags in args:
-                self.tags.append(tags)
+    def __init__(self, tags):
+        self.tags = tags
 
     def __repr__(self):
         return str(self.tags)
@@ -26,10 +21,18 @@ class Notes:
     def __init__(self, name: Name, data: str, tags: Tag = None):
         self.name = name
         self.data = data
-        self.tag = tags
+        self.tag = []
+        if tags:
+            self.tag.append(tags)
+
+    def add_tags(self, tags):
+        self.tag.append(tags)
+
+    def change_notes(self, data):
+        self.data = data
 
     def __repr__(self):
-        if self.tag is None:
+        if len(self.tag) == 0:
             return f'{self.name}: {self.data}'
         else:
             return f'{self.name}: {self.data}, Tags: {self.tag}'
@@ -62,12 +65,10 @@ def cmd_error(*args):
 def add_to_notebook(notebook: NoteBook, *args):
     temp_name = Name(args[0])
     temp_note_txt = args[1]
-    tmp_user_input = input('Do you need to add some Tags to your note? if so - type Y/y -> ')
+    tmp_user_input = input('Do you need to add some Tag to your note? if so - type Y/y -> ')
     if tmp_user_input in ('Y', 'y'):
-        tmp_tags_input = Tag((input('add Tags divided by spaces: ')))
-        print(tmp_tags_input)
-        # tag_1 = Tag('opportunity', 'test')
-        temp_note = Notes(temp_name, temp_note_txt, tmp_tags_input)
+        tmp_tags_input = input('add Tag: ')
+        temp_note = Notes(temp_name, temp_note_txt, Tag(tmp_tags_input))
     else:
         temp_note = Notes(temp_name, temp_note_txt)
     notebook.add_to_notebook(temp_note)
@@ -89,22 +90,40 @@ def delete_note(notebook: NoteBook, *args):
 
 
 @input_error
-def add_tags(notebook: NoteBook, *args):
-    return 'in add tags'
+def add_tag(notebook: NoteBook, *args):
+    tmp_note = ' '.join(args)
+    if tmp_note not in notebook.keys():
+        return 'There is no such note'
+    for k_notes, v_notes in notebook.data.items():
+        if tmp_note == k_notes:
+            print(f'the note with name {tmp_note} exist and looks like --> {notebook.get(tmp_note)}')
+            Notes.add_tags(v_notes, Tag(input('input tag: ')))
+    return f'Tag for Note {tmp_note} was added'
 
 
 def change_note(notebook: NoteBook, *args):
     tmp_note = ' '.join(args)
     if tmp_note not in notebook.keys():
         return 'There is no such note'
-    print(f'the note with name {tmp_note} exist and looks like --> {notebook.get(tmp_note)}')
-    notebook[tmp_note] = Notes(Name(tmp_note), input('change the note: '))
-
+    for k_notes, v_notes in notebook.data.items():
+        if tmp_note == k_notes:
+            print(f'the note with name {tmp_note} exist and looks like --> {notebook.get(tmp_note)}')
+            Notes.change_notes(v_notes, input('change the note: '))
     return f'Note {tmp_note} was changed'
 
 
+def info(*args):
+    print('The commands are:')
+    print('"add note" -> to add note, example: add note __Name__ __Note TXT__')
+    print('"delete note" -> to delete note , example: delete note __Name__')
+    print('"change note" -> to change note , example: change note __Name__')
+    print('"add tag" -> to add tag , example: add tag __Name__')
+    print('"exit or . " -> to exit')
+    return 'make your choice'
+
+
 COMMANDS = {ex: ['exit', '.'], add_to_notebook: ['add note'], show_all: ["show all"], delete_note: ['delete note'],
-            change_note: ['change note']}
+            change_note: ['change note'], add_tag: ['add tag'], info: ['info', 'help']}
 
 
 def parse_command(user_input: str):
@@ -117,13 +136,13 @@ def parse_command(user_input: str):
 
 def main():
     our_notes = NoteBook()
+    print('for help with commands type info')
     # тут просто пока наполняю записную книгу чтоб что-то было
     name_n1 = Name('First note')
     name_n2 = Name('Second note')
     name_n3 = Name('Third note')
     name_n4 = Name('Bandera smuzi')
-    tag_1 = Tag('opportunity', 'test')
-
+    tag_1 = Tag("Tag1")
     tag_2 = Tag('cooking')
     note_1 = Notes(name_n1, 'Huge opportunity', tag_1)
     note_2 = Notes(name_n2, 'second step')
@@ -138,6 +157,7 @@ def main():
     our_notes.add_to_notebook(note_4)
 
     # print(our_notes)
+
     while True:
         our_command = input("And your command is...> ")
         result, data = parse_command(our_command)

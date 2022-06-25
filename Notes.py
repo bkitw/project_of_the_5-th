@@ -180,6 +180,7 @@ def main():
     our_notes.add_to_notebook(note_4)
 
     # print(our_notes)
+    #
 
     while True:
         our_command = input("And your command is...> ")

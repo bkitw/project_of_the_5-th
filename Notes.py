@@ -139,6 +139,7 @@ def info(*args):
     print('"delete note" -> to delete note , example: delete note __Name__')
     print('"change note" -> to change note , example: change note __Name__')
     print('"add tag" -> to add tag , example: add tag __Name__')
+    print('"finder" -> to start searching in tags or text')
     print('"exit or . " -> to exit')
     return 'make your choice'
 

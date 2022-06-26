@@ -50,6 +50,8 @@ def input_error(in_func):
             return check
         except KeyError:
             return "Please check your input"
+        except IndexError:
+            return "Need more arguments"
     return wrapper
 
 

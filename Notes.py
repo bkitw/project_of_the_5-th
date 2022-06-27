@@ -1,5 +1,8 @@
+import os
+import pickle
 from collections import UserDict
 from datetime import datetime
+from pathlib import Path
 
 
 class Name:
@@ -27,32 +30,30 @@ class Notes:
             self.tag.append(tags)
         self.time = time
 
-    def add_tags(self, tags):
+    def add_tags(self, tags, edit_time=datetime.now()):
         self.tag.append(tags)
+        self.time = edit_time
 
     def change_notes(self, data):
         self.data = data
 
-    def change_tag(self, old_tag, new_tag):
+    def change_tag(self, old_tag, new_tag, edit_time=datetime.now()):
         for i in self.tag:
             if i.tags == old_tag.tags:
                 self.tag[self.tag.index(i)] = new_tag
+        self.time = edit_time
 
-    def delete_tags(self, tags):
+    def delete_tags(self, tags, edit_time=datetime.now()):
         for i in self.tag:
             if i.tags == tags.tags:
                 self.tag.remove(i)
+        self.time = edit_time
 
     def __repr__(self):
         if len(self.tag) == 0:
-            if self.time is None:
-                return f'{self.name}: {self.data} there is no Tags and no time'
-            else:
-                return f'{self.name}: {self.data} there is no Tags, edit time {self.time}'
-        if len(self.tag) != 0:
-            return f'{self.name}: {self.data}, Tags: {self.tag}, no edit time'
+            return f'{self.name}: {self.data} there is no Tags and no time'
         else:
-            return f'{self.name}: {self.data}, Tags: {self.tag}, edit time {self.time}'
+            return f'{self.name}: {self.data} there is no Tags, edit time {self.time}'
 
 
 class NoteBook(UserDict):
@@ -71,10 +72,14 @@ def input_error(in_func):
             return "Need more arguments"
         except AttributeError:
             return "No such attribute"
+        except EOFError:
+            return "DB file got corrupted"
+
     return wrapper
 
 
-def ex(*args):
+def ex(note_book, *args):
+    save_db(note_book)
     return 'Bye!'
 
 
@@ -93,6 +98,7 @@ def add_to_notebook(notebook: NoteBook, *args):
     else:
         temp_note = Notes(temp_name, temp_note_txt, None, datetime.now())
     notebook.add_to_notebook(temp_note)
+    save_db(notebook)
     return f'Note with name {temp_name} was added'
 
 
@@ -134,7 +140,7 @@ def change_tag(notebook: NoteBook, *args):
             old_tag = Tag(input('give me Tag to change: '))
             new_tag = Tag(input('input new Tag name: '))
             Notes.change_tag(v_notes, old_tag, new_tag)
-    return f' The Tag {old_tag} was changed for {new_tag} n Note:{tmp_note}'
+    return f'The Tag {old_tag} was changed for {new_tag} n Note:{tmp_note}'
 
 
 @input_error
@@ -189,15 +195,17 @@ def info(*args):
     print('"delete note" -> to delete note , example: delete note __Name__')
     print('"change note" -> to change note , example: change note __Name__')
     print('"add tag" -> to add tag , example: add tag __Name__')
-    print('"change tag" -> to add tag , example: add tag __Name__')
+    print('"change tag" -> to add tag , example: change tag __Name__')
+    print('"delete tag" -> to add tag , example: delete tag __Name__')
     print('"finder" -> to start searching in tags or text')
     print('"exit or . " -> to exit')
     return 'make your choice'
 
 
 COMMANDS = {ex: ['exit', '.'], add_to_notebook: ['add note'], show_all: ["show all"], delete_note: ['delete note'],
-            change_note: ['change note'], add_tag: ['add tag'], finder: ['finder'],change_tag: ['change tag'], delete_tag: ['delete tag'], info: ['info', 'help']}
-#  change_tag: ['change tag'], delete_tag: ['delete tag']
+            change_note: ['change note'], add_tag: ['add tag'], finder: ['finder'], change_tag: ['change tag'],
+            delete_tag: ['delete tag'], info: ['info', 'help']}
+
 
 def parse_command(user_input: str):
     for k, v in COMMANDS.items():
@@ -207,31 +215,29 @@ def parse_command(user_input: str):
     return cmd_error, ['']
 
 
-def main():
-    our_notes = NoteBook()
-    print('for help with commands type info or help')
-    # тут просто пока наполняю записную книгу чтоб что-то было
-    name_n1 = Name('Godfather')
-    name_n2 = Name('Second note')
-    name_n3 = Name('Cuba Libre')
-    name_n4 = Name('Bandera smuzi')
-    t1 = datetime.now().now()
-    tag_1 = Tag("Tag1")
-    tag_2 = Tag('cooking')
-    note_1 = Notes(name_n1, 'Хорошо перемешайте оба ингредиента в стакане с колотым льдом. Ничем не украшайте.', tag_1, t1)
-    note_2 = Notes(name_n2, 'Выдавите сок лайма в высокий стакан (хайбол), наполовину заполненный льдом. Бросьте в '
-                            'стакан оставшуюся кожуру. Добавьте ром, размешайте, долейте ледяной Кока-Колой.', None, t1)
-    note_3 = Notes(name_n3, 'Влейте спиртное в низкий стакан, заполненный большим количеством колотого льда. Хорошо '
-                            'размешайте. Затем добавьте колу.бутылка', tag_2, t1)
-    note_4 = Notes(name_n4,'в бутылку до половины объема насыпаются кусочки пенопласта; заливается 1/3 оставшегося объема '
-                           'отработанного машинного масла, 2/3 – бензина; но сверху должно оставаться немного места для '
-                           'испарения; бутылка плотно закрывается пробкой; на горлышко привязывается фитиль; '
-                           'Бандера-смузи готов', tag_2)
-    our_notes.add_to_notebook(note_1)
-    our_notes.add_to_notebook(note_2)
-    our_notes.add_to_notebook(note_3)
-    our_notes.add_to_notebook(note_4)
+def db_checker():
+    if os.path.isfile('bd_/notes/bd_note.bin'):
+        with open('bd_/notes/bd_note.bin', 'rb') as f:
+            our_notes = NoteBook()
+            our_notes.data = pickle.load(f)
+        return our_notes
+    else:
+        filepath = Path('bd_/notes/bd_note.bin')
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        our_notes = NoteBook()
+    return our_notes
 
+
+def save_db(our_notes):
+    filepath = Path('bd_/notes/bd_note.bin')
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with open(filepath, 'wb') as f:
+        pickle.dump(our_notes, f)
+
+
+def main():
+    our_notes = db_checker()
+    print('for help with commands type info or help')
     while True:
         our_command = input("And your command is...> ")
         result, data = parse_command(our_command)

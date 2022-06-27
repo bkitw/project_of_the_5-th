@@ -53,7 +53,8 @@ class Notes:
         if len(self.tag) == 0:
             return f'{self.name}: {self.data} there is no Tags and no time'
         else:
-            return f'{self.name}: {self.data} there is no Tags, edit time {self.time}'
+            return f'{self.name}: {self.data} there is no Tags, edit ' \
+                   f'time {self.time.strftime("%H:%M:%S | edit date %d-%m-%Y")}'
 
 
 class NoteBook(UserDict):
@@ -97,6 +98,7 @@ def add_to_notebook(notebook: NoteBook, *args):
         temp_note = Notes(temp_name, temp_note_txt, Tag(tmp_tags_input), datetime.now())
     else:
         temp_note = Notes(temp_name, temp_note_txt, None, datetime.now())
+
     notebook.add_to_notebook(temp_note)
     save_db(notebook)
     return f'Note with name {temp_name} was added'

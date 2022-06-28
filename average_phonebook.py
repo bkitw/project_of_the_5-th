@@ -8,6 +8,34 @@ import re
 from random import choice
 
 
+class NoEmailUpdateTo(Exception):
+	"""
+	Exception raised when there is no email update to.
+	"""
+	pass
+
+
+class EmailAlreadyExists(Exception):
+	"""
+	Exception raised when trying to add an email that already exists.
+	"""
+	pass
+
+
+class NameAlreadyExists(Exception):
+	"""
+		Exception raised when a name already exist in the phonebook.
+	"""
+	pass
+
+
+class PhoneAlreadyExists(Exception):
+	"""
+		Exception raised when a phone number already exist in the phonebook.
+	"""
+	pass
+
+
 class WrongName(Exception):
 	"""
 	Raised when the name is not valid
@@ -42,13 +70,22 @@ class WrongPhoneNumberFormat(Exception):
 	"""
 	pass
 
+
 class NotRightPhoneNumberToUpdate(Exception):
 	"""
 	Raised when the phone number is not exist
 	"""
 	pass
 
+
 class WrongEmailFormat(Exception):
+	"""
+	Raised when the email is not valid
+	"""
+	pass
+
+
+class ThisMailDoesNotExist(Exception):
 	"""
 	Raised when the email is not valid
 	"""
@@ -82,14 +119,33 @@ def exception_handler(function):
 				time.sleep(1)
 				break
 			except NotRightPhoneNumberToUpdate:
-				print('-\n|The phone number is not exist.|\n-')
+				print('-\n|This contact doesn\'t have a phone number you tried to update .|\n-')
 				time.sleep(1)
 				break
 			except WrongEmailFormat:
 				print('-\n|The email is not valid.|\n-')
 				time.sleep(1)
 				break
-
+			except NameAlreadyExists:
+				print('-\n|The name is already exist.|\n-')
+				time.sleep(1)
+				break
+			except PhoneAlreadyExists:
+				print('-\n|The phone number is already exist in this phonebook.|\n-')
+				time.sleep(1)
+				break
+			except EmailAlreadyExists:
+				print('-\n|The email is already exist in this phonebook.|\n-')
+				time.sleep(1)
+				break
+			except NoEmailUpdateTo:
+				print('-\n|Something went wrong, I guess.|\n-')
+				time.sleep(1)
+				break
+			except ThisMailDoesNotExist:
+				print('-\n|You are trying to change a non-existent email address|\n-')
+				time.sleep(1)
+				break
 	return wrapper
 
 
@@ -147,7 +203,7 @@ class Record:
 			self.delete_email(email)
 			self.add_email(new_email.value)
 			return True
-		raise ValueError
+		raise ThisMailDoesNotExist
 
 	def delete_email(self, email) -> bool:
 		if self.check_email(email):
@@ -228,7 +284,7 @@ class EMail(Field):
 	@value.setter
 	def value(self, n_value):
 		n_value = n_value.strip()
-		if not re.match(r'^[a-z0-9_\-\.]+@[a-z0-9_\-\.]+\.[a-z]+$', n_value):
+		if not re.match(r'^[a-z\d_\-.]+@[a-z\d_\-.]+\.[a-z]+$', n_value):
 			raise WrongEmailFormat
 		self.__value = n_value
 
@@ -271,7 +327,7 @@ class AddressBook(UserDict):
 			start, n = n, n + page
 			if start >= len(self.data):
 				break
-			gate = input('Press ENTER to proceed...\n')
+			gate = input('|Press ENTER to proceed...|\n')
 
 
 address_book = AddressBook()
@@ -287,9 +343,13 @@ def add_contact(*args):
 		phone = Phone(args[0][1])
 	except IndexError:
 		raise NotEnoughArguments
+	if name.value in address_book:
+		raise NameAlreadyExists
+	elif phone.value in address_book:
+		raise PhoneAlreadyExists
 	record = Record(name, phone)
 	address_book.add_record(record)
-	print(f'Contact {name.value} added to the phonebook.')
+	print(f'|Contact {name.value} added to the phonebook.|')
 
 
 @exception_handler
@@ -298,14 +358,17 @@ def update_number(*args):
 		try:
 			name = Name(args[0][0])
 			if name.value in address_book:
+				phone = Phone(args[0][1])
+				if phone.value in address_book:
+					raise PhoneAlreadyExists
 				address_book[name.value].update_phone(Phone(args[0][1]), Phone(args[0][2]))
-				print(f'This contacts phone number {name.value} updated.')
+				print(f'|This contacts phone number {name.value} updated.|')
 			else:
-				print(f'Contact {name.value} not found.')
+				print(f'|Contact {name.value} not found.|')
 		except IndexError:
 			raise NotEnoughArguments
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -314,14 +377,17 @@ def append_number(*args):
 		try:
 			name = Name(args[0][0])
 			if name.value in address_book:
+				phone = Phone(args[0][1])
+				if phone.value in address_book:
+					raise PhoneAlreadyExists
 				address_book[name.value].add_phone(Phone(args[0][1]))
-				print(f'Number {args[0][1]} appended to contact {name.value}.')
+				print(f'|Number {args[0][1]} appended to contact {name.value}.|')
 			else:
-				print(f'Contact {name.value} not found.')
+				print(f'|Contact {name.value} not found.|')
 		except IndexError:
 			raise NotEnoughArguments
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -331,13 +397,13 @@ def delete_phone_number(*args):
 			name = Name(args[0][0])
 			if name.value in address_book:
 				address_book[name.value].delete_phone(Phone(args[0][1]))
-				print(f'Number {args[0][1]} of contact {name.value} successfully deleted.')
+				print(f'|Number {args[0][1]} of contact {name.value} successfully deleted.|')
 			else:
-				print(f'Contact {name.value} not found.')
+				print(f'|Contact {name.value} not found.|')
 		except IndexError:
 			raise NotEnoughArguments
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -347,13 +413,13 @@ def delete_contact(*args):
 			name = Name(args[0][0])
 			if name.value in address_book:
 				del address_book[name.value]
-				print(f'Contact {name.value} successfully deleted.')
+				print(f'|Contact {name.value} successfully deleted.|')
 			else:
-				print(f'Contact {name.value} not found.')
+				print(f'|Contact {name.value} not found.|')
 		except IndexError:
 			raise NotEnoughArguments
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -361,14 +427,14 @@ def show_all(*args):
 	clear_screen()
 	print('--- Phonebook ---')
 	if address_book:
-		how_much_recs = input('Press "ENTER" to show all the records.'
+		how_much_recs = input('|Press "ENTER" to show all the records.|'
 		                      '\nOr enter the required quantity: \n>>>> ')
 		if how_much_recs == '':
-			how_much_recs = 10000
+			how_much_recs = len(address_book)
 		elif how_much_recs.isalpha():
 			raise NotANumberForCountOFRecords
-		else:
-			print(f'You entered {how_much_recs} records, but I cannot show less than 1 record.')
+		elif int(how_much_recs) <= 0:
+			print(f'|You entered {how_much_recs} records, but I cannot show less than 1 record.|')
 			how_much_recs = 1
 		for rec in address_book.iterator(int(how_much_recs)):
 			while True:
@@ -387,7 +453,7 @@ def show_all(*args):
 				break
 		print('--- End of phonebook ---')
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -443,13 +509,13 @@ def search_command(*args) -> None:
 				if found:
 					break
 				else:
-					print('Not found anything.')
+					print('|Not found anything.|')
 					break
 
 		print(f'\n--- Search is Complete ---')
 
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -458,14 +524,17 @@ def add_email(*args):
 		try:
 			name = Name(args[0][0])
 			if name.value in address_book:
+				email = EMail(args[0][1])
+				if email.value in address_book[name.value].emails:
+					raise EmailAlreadyExists
 				address_book[name.value].add_email(EMail(args[0][1]))
-				print(f'Email {args[0][1]} added to contact {name.value}.')
+				print(f'|Email {args[0][1]} added to contact {name.value}.|')
 			else:
-				print(f'Contact {name.value} not found.')
+				print(f'|Contact {name.value} not found.|')
 		except IndexError:
 			raise NotEnoughArguments
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -474,14 +543,16 @@ def update_email(*args):
 		try:
 			name = Name(args[0][0])
 			if name.value in address_book:
-				address_book[name.value].update_email(EMail(args[0][1]))
-				print(f'Email {args[0][1]} updated in contact {name.value}.')
+				address_book[name.value].update_email(EMail(args[0][1]), EMail(args[0][2]))
+				print(f'|Email {args[0][1]} updated in contact {name.value}.|')
 			else:
-				print(f'Contact {name.value} not found.')
+				print(f'|Contact {name.value} not found.|')
 		except IndexError:
 			raise NotEnoughArguments
+		except TypeError:
+			raise NoEmailUpdateTo
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -491,13 +562,13 @@ def append_email(*args):
 			name = Name(args[0][0])
 			if name.value in address_book:
 				address_book[name.value].append_email(EMail(args[0][1]))
-				print(f'Email {args[0][1]} appended to contact {name.value}.')
+				print(f'|Email {args[0][1]} appended to contact {name.value}.|')
 			else:
-				print(f'Contact {name.value} not found.')
+				print(f'|Contact {name.value} not found.|')
 		except IndexError:
 			raise NotEnoughArguments
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -507,13 +578,13 @@ def delete_email(*args):
 			name = Name(args[0][0])
 			if name.value in address_book:
 				address_book[name.value].delete_email(EMail(args[0][1]))
-				print(f'Email {args[0][1]} deleted from contact {name.value}.')
+				print(f'|Email {args[0][1]} deleted from contact {name.value}.|')
 			else:
-				print(f'Contact {name.value} not found.')
+				print(f'|Contact {name.value} not found.|')
 		except IndexError:
 			raise NotEnoughArguments
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -523,13 +594,13 @@ def add_birthday(*args):
 			name = Name(args[0][0])
 			if name.value in address_book:
 				address_book[name.value].add_birthday(Birthday(args[0][1]))
-				print(f'Birthday {args[0][1]} added to contact {name.value}.')
+				print(f'|Birthday {args[0][1]} added to contact {name.value}.|')
 			else:
-				print(f'Contact {name.value} not found.')
+				print(f'|Contact {name.value} not found.|')
 		except IndexError:
 			raise NotEnoughArguments
 	else:
-		print('Phonebook is empty.')
+		print('|Phonebook is empty.|')
 
 
 @exception_handler
@@ -537,7 +608,7 @@ def near_bd(*args):
 	try:
 		days = int(args[0][0])
 	except NotEnoughArguments:
-		print('No number of days to search.')
+		print('|No number of days to search.|')
 		return False
 	if address_book:
 		print('--- Search for contacts with the upcoming birthday ---')
@@ -550,20 +621,20 @@ def near_bd(*args):
 				date_plus = today + timedelta(days=days)
 				days_to_bd = (dude_date - today).days
 				if today <= dude_date <= date_plus:
-					print(f'Contact {name} was born {data.birthday}, until his birthday left {days_to_bd} days.')
+					print(f'|Contact {name} was born {data.birthday}, until his birthday left {days_to_bd} days.|')
 
 		print('--- Search completed ---')
 	else:
-		print('Phonebook is empty')
+		print('|Phonebook is empty.|')
 
 
 def clear_phonebook(*args):
 	ask = input('Are you sure you want to clear the phonebook? (y/n) ')
 	if ask == 'y':
 		address_book.clear()
-		print('Phonebook cleared')
+		print('|Phonebook cleared.|')
 	else:
-		print('Phonebook not cleared')
+		print('|Phonebook not cleared.|')
 
 
 ...
@@ -606,13 +677,13 @@ def top_secret(*args):
 	print('Or not?')
 	time.sleep(1)
 	print('Just in case, do not try to swear anymore, ok?')
-
+	time.sleep(1.5)
 
 
 def goodbye(*args) -> None:
 	so_long = ('Have a nice day!', 'See you later!', 'Bye!', 'Goodbye!', 'See you soon!', 'See you later!',
 	           'Take care!')
-	for i in so_long:
+	for message in so_long:
 		print(choice(so_long))
 		break
 	exit()
@@ -643,12 +714,12 @@ def help_command(*args) -> None:
 
 def greetings(*args) -> None:
 	clear_screen()
-	print('---\nWelcome to the phonebook!\nHow can I help you?\n---')
+	print('---\nHi, looking for some info?\nHow can I help you?\n---')
 	time.sleep(2)
 	help_command()
 
 
-def clear_screen(*args)-> None:
+def clear_screen(*args) -> None:
 	os.system('cls' if os.name == 'nt' else 'clear')
 
 
@@ -671,8 +742,28 @@ def hello(*args) -> None:
 
 
 def secret(*args) -> None:
-	print('Youre welcome! Have a wonderful day!')
+	print('|You\'re welcome! Have a wonderful day!|')
 
+
+...
+
+
+def preload_check():
+	try:
+		os.makedirs('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\', exist_ok=True)
+		with open('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\data_with_contacts.bin', 'rb') as f:
+			address_book.data = pickle.load(f)
+	except EOFError:
+		pass
+	except FileNotFoundError:
+		print(f'File "data_with_contacts.bin" not found. Creating new one...')
+		with open('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\data_with_contacts.bin', 'wb') as f:
+			pickle.dump(address_book.data, f)
+
+
+def saving():
+	with open('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\data_with_contacts.bin', 'wb') as f:
+		pickle.dump(address_book.data, f)
 
 
 ...
@@ -692,7 +783,7 @@ def command_parser(command: str) -> None:
 
 
 main_commands = {
-	clear_phonebook: ['clear phonebook',],
+	clear_phonebook: ['clear phonebook', ],
 	add_contact: ['add contact'],
 	update_number: ['update number'],
 	append_number: ['append number'],
@@ -717,23 +808,11 @@ main_commands = {
 
 def main():
 	hello()
-	try:
-		os.makedirs('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\', exist_ok=True)
-		with open('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\data_with_contacts.bin', 'rb') as f:
-			address_book.data = pickle.load(f)
-
-	except EOFError:
-		pass
-	except FileNotFoundError:
-		print(f'File "data_with_contacts.bin" not found. Creating new one...')
-		with open('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\data_with_contacts.bin', 'wb') as f:
-			pickle.dump(address_book.data, f)
-
+	preload_check()
 	while True:
 		command = input('Enter "hello" or "help" for more information.\n>>>>> ')
 		command_parser(command.strip())
-		with open('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\data_with_contacts.bin', 'wb') as f:
-			pickle.dump(address_book.data, f)
+		saving()
 
 
 if __name__ == '__main__':

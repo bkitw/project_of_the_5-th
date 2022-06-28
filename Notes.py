@@ -51,9 +51,9 @@ class Notes:
 
     def __repr__(self):
         if len(self.tag) == 0:
-            return f'{self.name}: {self.data} there is no Tags and no time'
+            return f'{self.name}: {self.data}, there is no Tags and no time'
         else:
-            return f'{self.name}: {self.data} Tags {self.tag}, edit ' \
+            return f'{self.name}: {self.data}, Tags {self.tag}, edited ' \
                    f'time {self.time.strftime("%H:%M:%S | edit date %d-%m-%Y")}'
 
 
@@ -91,7 +91,7 @@ def cmd_error(*args):
 @input_error
 def add_to_notebook(notebook: NoteBook, *args):
     temp_name = Name(args[0])
-    temp_note_txt = args[1]
+    temp_note_txt = ' '.join(list(args[1:]))
     tmp_user_input = input('Do you need to add some Tag to your note? if so - type Y/y -> ')
     if tmp_user_input in ('Y', 'y'):
         tmp_tags_input = input('add Tag: ')

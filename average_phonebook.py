@@ -6,6 +6,7 @@ import pickle
 import os
 import re
 from random import choice
+from pathlib import Path
 
 
 class NoEmailUpdateTo(Exception):
@@ -749,21 +750,24 @@ def secret(*args) -> None:
 
 
 def preload_check():
-	try:
-		os.makedirs('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\', exist_ok=True)
-		with open('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\data_with_contacts.bin', 'rb') as f:
-			address_book.data = pickle.load(f)
-	except EOFError:
-		pass
-	except FileNotFoundError:
-		print(f'File "data_with_contacts.bin" not found. Creating new one...')
-		with open('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\data_with_contacts.bin', 'wb') as f:
-			pickle.dump(address_book.data, f)
+	if os.path.isfile(Path(Path.home(), 'Documents', 'PyBakers', 'database', 'data_with_contacts.bin')):
+		with open(Path(Path.home(), 'Documents', 'PyBakers', 'database', 'data_with_contacts.bin'), 'rb') as f:
+			address_book = pickle.load(f)
+			print('|Phonebook loaded.|')
+			return address_book
+	else:
+		filepath = Path(Path.home(), 'Documents', 'PyBakers', 'database', 'data_with_contacts.bin')
+		filepath.parent.mkdir(parents=True, exist_ok=True)
+		address_book = AddressBook()
+		return address_book
 
 
 def saving():
-	with open('C:\\ProgramData\\PyBakersProgram\\PythonPhonebook\\data_with_contacts.bin', 'wb') as f:
-		pickle.dump(address_book.data, f)
+	filepath = Path(Path.home(), 'Documents', 'PyBakers', 'database', 'data_with_contacts.bin')
+	filepath.parent.mkdir(parents=True, exist_ok=True)
+	with open(Path(Path.home(), 'Documents', 'PyBakers', 'database', 'data_with_contacts.bin'), 'wb') as f:
+		pickle.dump(address_book, f)
+
 
 
 ...

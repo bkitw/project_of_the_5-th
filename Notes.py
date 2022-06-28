@@ -219,7 +219,7 @@ def parse_command(user_input: str):
 
 def db_checker():
     if os.path.isfile(Path(Path.home(), 'Documents', 'PyBakers', 'database', 'data_with_notes.bin')):
-        with open('bd_/notes/bd_note.bin', 'rb') as f:
+        with open(Path(Path.home(), 'Documents', 'PyBakers', 'database', 'data_with_notes.bin'), 'rb') as f:
             our_notes = NoteBook()
             our_notes.data = pickle.load(f)
         return our_notes

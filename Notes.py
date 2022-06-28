@@ -218,20 +218,20 @@ def parse_command(user_input: str):
 
 
 def db_checker():
-    if os.path.isfile(Path(Path.home(), 'Documents', 'BD_', 'Notes', 'bd_note.bin')):
+    if os.path.isfile(Path(Path.home(), 'Documents', 'PyBakers', 'database', 'data_with_notes.bin')):
         with open('bd_/notes/bd_note.bin', 'rb') as f:
             our_notes = NoteBook()
             our_notes.data = pickle.load(f)
         return our_notes
     else:
-        filepath = Path(Path(Path.home(), 'Documents', 'BD_', 'Notes', 'bd_note.bin'))
+        filepath = Path(Path(Path.home(), 'Documents', 'PyBakers', 'database', 'data_with_notes.bin'))
         filepath.parent.mkdir(parents=True, exist_ok=True)
         our_notes = NoteBook()
     return our_notes
 
 
 def save_db(our_notes):
-    filepath = Path(Path(Path.home(), 'Documents', 'BD_', 'Notes', 'bd_note.bin'))
+    filepath = Path(Path(Path.home(), 'Documents', 'PyBakers', 'database', 'data_with_notes.bin'))
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with open(filepath, 'wb') as f:
         pickle.dump(our_notes, f)

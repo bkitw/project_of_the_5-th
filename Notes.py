@@ -199,9 +199,10 @@ def info(*args):
     print('"add tag" -> to add tag , example: add tag __Name__')
     print('"change tag" -> to add tag , example: change tag __Name__')
     print('"delete tag" -> to add tag , example: delete tag __Name__')
+    print('"show all" -> to show all notes')
     print('"finder" -> to start searching in tags or text')
-    print('"exit or . " -> to exit')
-    return 'make your choice'
+    print('"exit" or "." -> to exit')
+    return 'Make your choice'
 
 
 COMMANDS = {ex: ['exit', '.'], add_to_notebook: ['add note'], show_all: ["show all"], delete_note: ['delete note'],
@@ -238,7 +239,10 @@ def save_db(our_notes):
 
 
 def main():
-    our_notes = db_checker()
+    try:
+        our_notes = db_checker()
+    except Exception:
+        our_notes = NoteBook()
     print('for help with commands type info or help')
     while True:
         our_command = input("And your command is...> ")

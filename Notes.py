@@ -123,8 +123,10 @@ def add_to_notebook(notebook: NoteBook, *args):
 
 @input_error
 def show_all(notebook: NoteBook, *args):
+    if len(notebook) == 0:
+        return "The notes is empty"
     if args[0] == '':
-        print('Now you will get a whole book')
+        print('Now you will get a whole book\n')
         for k, v in notebook.data.items():
             print(f'Note name: {k}')
             print(f'Note content: {v.data}')
@@ -137,7 +139,7 @@ def show_all(notebook: NoteBook, *args):
         return 'End of the NoteBook'
     if args[0].isdigit():
         if int(args[0]) > len(notebook.data.values()):
-            print('Now you will get a whole book')
+            print('Now you will get a whole book\n')
             for k, v in notebook.data.items():
                 print(f'Note name {k}:')
                 print(f'Note content: {v.data}')
@@ -232,13 +234,25 @@ def finder(*args):
         for k_notes, v_notes in args[0].items():
             for i in v_notes.tag:
                 if find_tag == i.tags:
-                    print(f'Note name {k_notes}, : {v_notes.data}')
+                    print('============')
+                    print(f'Note name: {k_notes}:')
+                    print(f'Note content: {v_notes.data}')
+                    if v_notes.tag:
+                        print(f'Tags: {v_notes.tag}')
+                    else:
+                        print('No tags')
                     continue
     elif tmp_input == 'notes':
         find_note = input('type info to find -> ')
         for k_notes, v_notes in args[0].items():
-            if find_note in v_notes.data:
-                print(f'Note name {k_notes}, : {v_notes.data}')
+            if find_note.lower() in v_notes.data.lower():
+                print('============')
+                print(f'Note name: {k_notes}:')
+                print(f'Note content: {v_notes.data}')
+                if v_notes.tag:
+                    print(f'Tags: {v_notes.tag}')
+                else:
+                    print('No tags')
     else:
         return 'Oops'
     return '-------------------'

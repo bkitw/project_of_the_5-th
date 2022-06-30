@@ -106,7 +106,7 @@ pip install command:
 [![Language](https://img.shields.io/badge/language-python-blue?&style=plastic)](https://www.python.org)
 [![Language version](https://img.shields.io/badge/version-3.10-red?&style=plastic)](https://www.python.org/downloads/)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/LeadShadow/CW-Console-Bot?color=black?&style=plastic)
-![GitHub Release Date](https://img.shields.io/badge/release--date-june/july-orange?&style=plastic)
+![GitHub Release Date](https://img.shields.io/badge/release--date-30.06.2022-orange?&style=plastic)
 ![GitHub repo size](https://img.shields.io/badge/repo%20size-≈100%20kB-pink?&style=plastic)
 
 

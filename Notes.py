@@ -124,19 +124,42 @@ def add_to_notebook(notebook: NoteBook, *args):
 @input_error
 def show_all(notebook: NoteBook, *args):
     if args[0] == '':
+        print('Now you will get a whole book')
         for k, v in notebook.data.items():
-            print(f'Note name {k}')
+            print(f'Note name: {k}')
+            print(f'Note content: {v.data}')
+            if v.tag:
+                print(f'Tags: {v.tag}')
+            else:
+                print('No tags')
+            print(f'edited {v.time.strftime("time %H:%M:%S | date %d-%m-%Y")}')
+            print('============')
         return 'End of the NoteBook'
     if args[0].isdigit():
         if int(args[0]) > len(notebook.data.values()):
             print('Now you will get a whole book')
             for k, v in notebook.data.items():
-                print(f'Note name {k}')
+                print(f'Note name {k}:')
+                print(f'Note content: {v.data}')
+                if v.tag:
+                    print(f'Tags: {v.tag}')
+                else:
+                    print('No tags')
+                print(f'edited {v.time.strftime("time %H:%M:%S | date %d-%m-%Y")}')
+                print('============')
             return 'End of the NoteBook'
     if int(args[0]) <= len(notebook.data.values()):
         by_steps = notebook.iterator_notebook(notebook.counter, args[0])
         for n_ote in by_steps:
-            print(n_ote)
+            print('============')
+            print(f'Note name {n_ote.name}:')
+            print(f'{n_ote.data}')
+            if n_ote.tag:
+                print(f'{n_ote.tag}')
+            else:
+                print('No tags')
+            print(f'edited {n_ote.time.strftime("time %H:%M:%S | date %d-%m-%Y")}')
+            print('============')
         notebook.counter = 0
     return "End of the NoteBook"
 

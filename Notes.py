@@ -311,7 +311,7 @@ def main():
         our_notes = db_checker()
     except Exception:
         our_notes = NoteBook()
-    print('for help with commands type info or help')
+    print('For help with commands type info or help')
     while True:
         our_command = input("And your command is...> ")
         result, data = parse_command(our_command)

@@ -58,8 +58,23 @@ class Notes:
 
 
 class NoteBook(UserDict):
+    counter = 0
+
     def add_to_notebook(self, note: Notes):
         self.data[note.name.value] = note
+
+    def iterator_notebook(self, *args):
+        self.counter = int(args[0])
+        number_of_iterations = int(args[1])
+        b = list(self.data)
+        while int(self.counter) < number_of_iterations:
+            yield self[b[self.counter]]
+            self.counter += 1
+            if self.counter == number_of_iterations:
+                input("press Enter to continue...")
+                number_of_iterations += int(args[1])
+                if number_of_iterations > len(b):
+                    number_of_iterations = len(b)
 
 
 def input_error(in_func):
@@ -75,6 +90,8 @@ def input_error(in_func):
             return "No such attribute"
         except EOFError:
             return "DB file got corrupted"
+        except TypeError:
+            return "Need to check the data"
 
     return wrapper
 
@@ -106,9 +123,22 @@ def add_to_notebook(notebook: NoteBook, *args):
 
 @input_error
 def show_all(notebook: NoteBook, *args):
-    for names, values in notebook.items():
-        print(values)
-    return 'End of the notes'
+    if args[0] == '':
+        for k, v in notebook.data.items():
+            print(f'Note name {k}')
+        return 'End of the NoteBook'
+    if args[0].isdigit():
+        if int(args[0]) > len(notebook.data.values()):
+            print('Now you will get a whole book')
+            for k, v in notebook.data.items():
+                print(f'Note name {k}')
+            return 'End of the NoteBook'
+    if int(args[0]) <= len(notebook.data.values()):
+        by_steps = notebook.iterator_notebook(notebook.counter, args[0])
+        for n_ote in by_steps:
+            print(n_ote)
+        notebook.counter = 0
+    return "End of the NoteBook"
 
 
 @input_error
@@ -200,6 +230,7 @@ def info(*args):
     print('"change tag" -> to add tag , example: change tag __Name__')
     print('"delete tag" -> to add tag , example: delete tag __Name__')
     print('"show all" -> to show all notes')
+    print('"show all #" -> to show all notes by # steps')
     print('"finder" -> to start searching in tags or text')
     print('"exit" or "." -> to exit')
     return 'Make your choice'
